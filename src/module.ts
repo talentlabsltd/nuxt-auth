@@ -61,6 +61,7 @@ const defaultsByBackend: {
   authjs: {
     type: "authjs",
     trustHost: false,
+    // @ts-expect-error
     defaultProvider: undefined,
     addDefaultCallbackUrl: true,
   },
