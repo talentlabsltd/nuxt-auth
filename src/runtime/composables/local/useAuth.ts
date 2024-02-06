@@ -1,16 +1,11 @@
-import { readonly, Ref } from "vue";
-import { callWithNuxt } from "#app";
-import {
-  CommonUseAuthReturn,
-  SignOutFunc,
-  SignInFunc,
-  GetSessionFunc,
-  SecondarySignInOptions,
-} from "../../types";
-import { _fetch } from "../../utils/fetch";
-import { jsonPointerGet, useTypedBackendConfig } from "../../helpers";
-import { getRequestURLWN } from "../../utils/callWithNuxt";
-import { useAuthState } from "./useAuthState";
+import { readonly, Ref } from 'vue'
+import { callWithNuxt } from '#app/nuxt'
+import { CommonUseAuthReturn, SignOutFunc, SignInFunc, GetSessionFunc, SecondarySignInOptions, SignUpOptions } from '../../types'
+import { _fetch } from '../../utils/fetch'
+import { jsonPointerGet, useTypedBackendConfig } from '../../helpers'
+import { getRequestURLWN } from '../../utils/callWithNuxt'
+import { useAuthState } from './useAuthState'
+
 // @ts-expect-error - #auth not defined
 import type { SessionData } from "#auth";
 import {
@@ -84,9 +79,13 @@ const signOut: SignOutFunc = async (signOutOptions) => {
   data.value = null;
   rawToken.value = null;
 
-  const { path, method } = config.endpoints.signOut;
+  const signOutConfig = config.endpoints.signOut
+  let res
 
-  const res = await _fetch(nuxt, path, { method, headers });
+  if (signOutConfig) {
+    const { path, method } = signOutConfig
+    res = await _fetch(nuxt, path, { method, headers })
+  }
 
   const { callbackUrl, redirect = true, external } = signOutOptions ?? {};
   if (redirect) {
@@ -153,31 +152,26 @@ const getSession: GetSessionFunc<SessionData | null | void> = async (
   return data.value;
 };
 
-const signUp = async (
-  credentials: Credentials,
-  signInOptions?: SecondarySignInOptions
-) => {
-  const nuxt = useNuxtApp();
+const signUp = async (credentials: Credentials, signInOptions?: SecondarySignInOptions, signUpOptions?: SignUpOptions) => {
+  const nuxt = useNuxtApp()
 
   const { path, method } = useTypedBackendConfig(useRuntimeConfig(), "local")
     .endpoints.signUp;
   await _fetch(nuxt, path, {
     method,
-    body: credentials,
-  });
+    body: credentials
+  })
 
-  return signIn(credentials, signInOptions);
-};
+  if (signUpOptions?.preventLoginFlow) {
+    return
+  }
 
-interface UseAuthReturn
-  extends CommonUseAuthReturn<
-    typeof signIn,
-    typeof signOut,
-    typeof getSession,
-    SessionData
-  > {
-  signUp: typeof signUp;
-  token: Readonly<Ref<string | null>>;
+  return signIn(credentials, signInOptions)
+}
+
+interface UseAuthReturn extends CommonUseAuthReturn<typeof signIn, typeof signOut, typeof getSession, SessionData> {
+  signUp: typeof signUp
+  token: Readonly<Ref<string | null>>
 }
 export const useAuth = (): UseAuthReturn => {
   const { data, status, lastRefreshedAt, token } = useAuthState();
