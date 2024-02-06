@@ -160,7 +160,7 @@ type ProviderLocal = {
      * @example 'strict'
      */
     sameSiteAttribute?: boolean | "lax" | "strict" | "none" | undefined;
-    cookieName?: string;
+    cookiePrefix?: string;
     secureAttribute?: boolean;
     domainAttribute?: string | 'default';
   };

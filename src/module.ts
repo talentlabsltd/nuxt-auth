@@ -56,7 +56,7 @@ const defaultsByBackend: {
       maxAgeInSeconds: 30 * 60,
       sameSiteAttribute: "lax",
       // TL Edit
-      cookieName: "auth:token",
+      cookiePrefix: "auth.",
       secureAttribute: false,
       domainAttribute: "default",
     },
@@ -83,7 +83,7 @@ const defaultsByBackend: {
       maxAgeInSeconds: 5 * 60,
       sameSiteAttribute: "none", // 5 minutes
       // TL Edit
-      cookieName: "auth:token",
+      cookiePrefix: "auth.",
       secureAttribute: false,
       domainAttribute: "default",
     },

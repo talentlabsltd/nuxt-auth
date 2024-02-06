@@ -18,18 +18,50 @@ export const useAuthState = (): UseAuthStateReturn => {
   const config = useTypedBackendConfig(useRuntimeConfig(), "local");
   const commonAuthState = makeCommonAuthState<SessionData>();
 
+  const tokenNCookieName = `${config.token.cookiePrefix}_token.local`;
+  const strategyCookieName = `${config.token.cookiePrefix}strategy`;
+  const expiresAtCookieName = `${config.token.cookiePrefix}_token_expiration.local`;
+  
   // Re-construct state from cookie, also setup a cross-component sync via a useState hack, see https://github.com/nuxt/nuxt/issues/13020#issuecomment-1397282717
-  const _rawTokenCookie = useCookie<string | null>(config.token.cookieName, {
+  const _rawTokenCookie = useCookie<string | null>(tokenNCookieName, {
     default: () => null,
     maxAge: config.token.maxAgeInSeconds,
     sameSite: config.token.sameSiteAttribute,
     secure: config.token.secureAttribute,
-    domain: config.token.domainAttribute === "default" ? undefined : config.token.domainAttribute,
+    domain:
+      config.token.domainAttribute === "default"
+        ? undefined
+        : config.token.domainAttribute,
+  });
+
+  useCookie<string | null>(strategyCookieName, {
+    default: () => "local",
+    sameSite: config.token.sameSiteAttribute,
+    secure: config.token.secureAttribute,
+    domain:
+      config.token.domainAttribute === "default"
+        ? undefined
+        : config.token.domainAttribute,
+  });
+
+  const _expiresAtCookie = useCookie<number | null>(expiresAtCookieName, {
+    default: () => null,
+    sameSite: config.token.sameSiteAttribute,
+    secure: config.token.secureAttribute,
+    domain:
+      config.token.domainAttribute === "default"
+        ? undefined
+        : config.token.domainAttribute,
   });
 
   const rawToken = useState("auth:raw-token", () => _rawTokenCookie.value);
   watch(rawToken, () => {
     _rawTokenCookie.value = rawToken.value;
+    if(!_expiresAtCookie.value) {
+      // Set expiration time cookie for nuxt.js to know when to refresh the token
+      // No usage in this lib, only for nuxt.js auth package
+      _expiresAtCookie.value = Date.now() + (config.token.maxAgeInSeconds * 1000);
+    }
   });
 
   const token = computed(() => {
