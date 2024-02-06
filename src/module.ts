@@ -55,35 +55,43 @@ const defaultsByBackend: {
       headerName: "Authorization",
       maxAgeInSeconds: 30 * 60,
       sameSiteAttribute: "lax",
+      // TL Edit
+      cookieName: "auth:token",
+      secureAttribute: false,
+      domainAttribute: "default",
     },
     sessionDataType: { id: "string | number" },
   },
 
   refresh: {
-    type: 'refresh',
+    type: "refresh",
     pages: {
-      login: '/login'
+      login: "/login",
     },
     refreshOnlyToken: true,
     endpoints: {
-      signIn: { path: '/login', method: 'post' },
-      signOut: { path: '/logout', method: 'post' },
-      signUp: { path: '/register', method: 'post' },
-      getSession: { path: '/session', method: 'get' },
-      refresh: { path: '/refresh', method: 'post' }
+      signIn: { path: "/login", method: "post" },
+      signOut: { path: "/logout", method: "post" },
+      signUp: { path: "/register", method: "post" },
+      getSession: { path: "/session", method: "get" },
+      refresh: { path: "/refresh", method: "post" },
     },
     token: {
-      signInResponseTokenPointer: '/token',
-      type: 'Bearer',
-      headerName: 'Authorization',
+      signInResponseTokenPointer: "/token",
+      type: "Bearer",
+      headerName: "Authorization",
       maxAgeInSeconds: 5 * 60,
-      sameSiteAttribute: 'none' // 5 minutes
+      sameSiteAttribute: "none", // 5 minutes
+      // TL Edit
+      cookieName: "auth:token",
+      secureAttribute: false,
+      domainAttribute: "default",
     },
     refreshToken: {
-      signInResponseRefreshTokenPointer: '/refreshToken',
-      maxAgeInSeconds: 60 * 60 * 24 * 7 // 7 days
+      signInResponseRefreshTokenPointer: "/refreshToken",
+      maxAgeInSeconds: 60 * 60 * 24 * 7, // 7 days
     },
-    sessionDataType: { id: 'string | number' }
+    sessionDataType: { id: "string | number" },
   },
 
   authjs: {

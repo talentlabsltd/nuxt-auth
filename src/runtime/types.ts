@@ -69,7 +69,7 @@ type ProviderLocal = {
    *
    * Read more here: https://sidebase.io/nuxt-auth/v0.6/getting-started
    */
-  type: Extract<SupportedAuthProviders, 'local'>;
+  type: Extract<SupportedAuthProviders, "local">;
   /**
    * Endpoints to use for the different methods. `nuxt-auth` will use this and the root-level `baseURL` to create the final request. E.g.:
    * - `baseURL=/api/auth`, `path=/login` will result in a request to `/api/auth/login`
@@ -159,7 +159,10 @@ type ProviderLocal = {
      * @default 'lax'
      * @example 'strict'
      */
-    sameSiteAttribute?: boolean | 'lax' | 'strict' | 'none' | undefined;
+    sameSiteAttribute?: boolean | "lax" | "strict" | "none" | undefined;
+    cookieName?: string;
+    secureAttribute?: boolean;
+    domainAttribute?: string | 'default';
   };
   /**
    * Define an interface for the session data object that `nuxt-auth` expects to receive from the `getSession` endpoint.
