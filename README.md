@@ -1,7 +1,16 @@
+Setup pnpm:
+https://pnpm.io/installation#using-npm
+```
+npm install -g pnpm
+pnpm --version
+```
+
+should show 8.x.x
+
 Step to build:
 
 ```
-pnpm install
+pnpm install --frozen-lockfile
 pnpm dev:prepare
 pnpm prepack
 pnpm build
