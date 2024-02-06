@@ -21,7 +21,7 @@ export const useAuthState = (): UseAuthStateReturn => {
   const tokenNCookieName = `${config.token.cookiePrefix}_token.local`;
   const strategyCookieName = `${config.token.cookiePrefix}strategy`;
   const expiresAtCookieName = `${config.token.cookiePrefix}_token_expiration.local`;
-  
+
   // Re-construct state from cookie, also setup a cross-component sync via a useState hack, see https://github.com/nuxt/nuxt/issues/13020#issuecomment-1397282717
   const _rawTokenCookie = useCookie<string | null>(tokenNCookieName, {
     default: () => null,
@@ -54,13 +54,21 @@ export const useAuthState = (): UseAuthStateReturn => {
         : config.token.domainAttribute,
   });
 
+  // make sure the token cookie is prefixed with the token type
+  if (
+    _rawTokenCookie.value &&
+    !_rawTokenCookie.value?.startsWith(config.token.type)
+  ) {
+    _rawTokenCookie.value = `${config.token.type} ${_rawTokenCookie.value}`;
+  }
+
   const rawToken = useState("auth:raw-token", () => _rawTokenCookie.value);
   watch(rawToken, () => {
     _rawTokenCookie.value = rawToken.value;
-    if(!_expiresAtCookie.value) {
+    if (!_expiresAtCookie.value) {
       // Set expiration time cookie for nuxt.js to know when to refresh the token
       // No usage in this lib, only for nuxt.js auth package
-      _expiresAtCookie.value = Date.now() + (config.token.maxAgeInSeconds * 1000);
+      _expiresAtCookie.value = Date.now() + config.token.maxAgeInSeconds * 1000;
     }
   });
 
@@ -68,13 +76,19 @@ export const useAuthState = (): UseAuthStateReturn => {
     if (rawToken.value === null) {
       return null;
     }
+
+    // If the token is already prefixed with the token type, return it as is
+    if (rawToken.value.startsWith(config.token.type)) {
+      return rawToken.value;
+    }
+
     return config.token.type.length > 0
       ? `${config.token.type} ${rawToken.value}`
       : rawToken.value;
   });
 
   const setToken = (newToken: string | null) => {
-    rawToken.value = newToken;
+    rawToken.value = `${config.token.type} ${newToken}`;
   };
 
   const clearToken = () => {
