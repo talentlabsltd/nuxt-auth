@@ -19,18 +19,19 @@ import type {
   AuthProviders
 } from './runtime/types'
 
+
 const topLevelDefaults = {
   isEnabled: true,
   session: {
     enableRefreshPeriodically: false,
-    enableRefreshOnWindowFocus: true
+    enableRefreshOnWindowFocus: true,
   },
   globalAppMiddleware: {
     isEnabled: false,
     allow404WithoutAuth: true,
-    addDefaultCallbackUrl: true
-  }
-} satisfies ModuleOptions
+    addDefaultCallbackUrl: true,
+  },
+} satisfies ModuleOptions;
 
 const defaultsByBackend: {
   [key in SupportedAuthProviders]: DeepRequired<
@@ -38,24 +39,24 @@ const defaultsByBackend: {
   >;
 } = {
   local: {
-    type: 'local',
+    type: "local",
     pages: {
-      login: '/login'
+      login: "/login",
     },
     endpoints: {
-      signIn: { path: '/login', method: 'post' },
-      signOut: { path: '/logout', method: 'post' },
-      signUp: { path: '/register', method: 'post' },
-      getSession: { path: '/session', method: 'get' }
+      signIn: { path: "/login", method: "post" },
+      signOut: { path: "/logout", method: "post" },
+      signUp: { path: "/register", method: "post" },
+      getSession: { path: "/session", method: "get" },
     },
     token: {
-      signInResponseTokenPointer: '/token',
-      type: 'Bearer',
-      headerName: 'Authorization',
+      signInResponseTokenPointer: "/token",
+      type: "Bearer",
+      headerName: "Authorization",
       maxAgeInSeconds: 30 * 60,
-      sameSiteAttribute: 'lax'
+      sameSiteAttribute: "lax",
     },
-    sessionDataType: { id: 'string | number' }
+    sessionDataType: { id: "string | number" },
   },
 
   refresh: {
@@ -86,30 +87,30 @@ const defaultsByBackend: {
   },
 
   authjs: {
-    type: 'authjs',
+    type: "authjs",
     trustHost: false,
     // @ts-expect-error
     defaultProvider: undefined,
-    addDefaultCallbackUrl: true
-  }
-}
+    addDefaultCallbackUrl: true,
+  },
+};
 
 const PACKAGE_NAME = 'sidebase-auth'
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: PACKAGE_NAME,
-    configKey: 'auth'
+    configKey: "auth",
   },
-  setup (userOptions, nuxt) {
-    const logger = useLogger(PACKAGE_NAME)
+  setup(userOptions, nuxt) {
+    const logger = useLogger(PACKAGE_NAME);
 
     // 0. Assemble all options
     const { origin, pathname = '/api/auth' } = getOriginAndPathnameFromURL(
       userOptions.baseURL ?? ''
     )
 
-    const selectedProvider = userOptions.provider?.type ?? 'authjs'
+    const selectedProvider = userOptions.provider?.type ?? "authjs";
 
     const options = {
       ...defu(userOptions, topLevelDefaults, {
@@ -128,11 +129,11 @@ export default defineNuxtModule<ModuleOptions>({
 
     // 1. Check if module should be enabled at all
     if (!options.isEnabled) {
-      logger.info(`Skipping ${PACKAGE_NAME} setup, as module is disabled`)
-      return
+      logger.info(`Skipping ${PACKAGE_NAME} setup, as module is disabled`);
+      return;
     }
 
-    logger.info('`nuxt-auth` setup starting')
+    logger.info("`nuxt-auth` setup starting");
 
     // 2. Set up runtime configuration
     if (!isProduction) {
@@ -145,19 +146,19 @@ export default defineNuxtModule<ModuleOptions>({
       )
     }
 
-    nuxt.options.runtimeConfig = nuxt.options.runtimeConfig || { public: {} }
+    nuxt.options.runtimeConfig = nuxt.options.runtimeConfig || { public: {} };
 
     // @ts-ignore
-    nuxt.options.runtimeConfig.public.auth = options
+    nuxt.options.runtimeConfig.public.auth = options;
 
     // 3. Locate runtime directory
-    const { resolve } = createResolver(import.meta.url)
+    const { resolve } = createResolver(import.meta.url);
 
     // 4. Add the correct nuxt-auth app composable, for the desired backend
     addImports([
       {
-        name: 'useAuth',
-        from: resolve(`./runtime/composables/${options.provider.type}/useAuth`)
+        name: "useAuth",
+        from: resolve(`./runtime/composables/${options.provider.type}/useAuth`),
       },
       {
         name: 'useAuthState',
@@ -168,8 +169,8 @@ export default defineNuxtModule<ModuleOptions>({
     ])
 
     // 5. Create virtual imports for server-side
-    nuxt.hook('nitro:config', (nitroConfig) => {
-      nitroConfig.alias = nitroConfig.alias || {}
+    nuxt.hook("nitro:config", (nitroConfig) => {
+      nitroConfig.alias = nitroConfig.alias || {};
 
       // Inline module runtime in Nitro bundle
       nitroConfig.externals = defu(
@@ -213,18 +214,17 @@ export default defineNuxtModule<ModuleOptions>({
 
     // 6. Register middleware for autocomplete in definePageMeta
     addRouteMiddleware({
-      name: 'auth',
-      path: resolve('./runtime/middleware/auth')
-    })
+      name: "auth",
+      path: resolve("./runtime/middleware/auth"),
+    });
 
     // 7. Add plugin for initial load
-    addPlugin(resolve('./runtime/plugin'))
+    addPlugin(resolve("./runtime/plugin"));
 
     // 8. Add a server-plugin to check the `origin` on production-startup
-    if (selectedProvider === 'authjs') {
-      addServerPlugin(resolve('./runtime/server/plugins/assertOrigin'))
+    if (selectedProvider === "authjs") {
+      addServerPlugin(resolve("./runtime/server/plugins/assertOrigin"));
     }
-
     // 7.2 Add a server-plugin to refresh the token on production-startup
     if (selectedProvider === 'refresh') {
       addPlugin(resolve('./runtime/plugins/refresh-token.server'))
