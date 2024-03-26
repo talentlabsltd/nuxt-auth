@@ -107,7 +107,6 @@ const getSession: GetSessionFunc<SessionData | null | void> = async (
   const { data, loading, lastRefreshedAt, token, rawToken } = useAuthState();
 
   const ga_client_id = useCookie("_ga");
-  console.log(ga_client_id.value);
 
   if (!token.value && !getSessionOptions?.force) {
     return;
@@ -125,7 +124,8 @@ const getSession: GetSessionFunc<SessionData | null | void> = async (
   loading.value = true;
   try {
     data.value = await _fetch<SessionData>(nuxt, path, { method, headers });
-  } catch {
+  } catch(e) {
+    console.error("Failed to get session data", e)
     // Clear all data: Request failed so we must not be authenticated
     data.value = null;
     rawToken.value = null;
