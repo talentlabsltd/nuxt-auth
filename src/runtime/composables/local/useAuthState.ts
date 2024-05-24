@@ -73,7 +73,7 @@ export const useAuthState = (): UseAuthStateReturn => {
   });
 
   const token = computed(() => {
-    if (rawToken.value === null) {
+    if (!rawToken.value) {
       return null;
     }
 
